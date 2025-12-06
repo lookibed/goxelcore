@@ -1,39 +1,31 @@
 package main
 
 import (
-	"github.com/Zyko0/go-sdl3/bin/binsdl"
-	"github.com/Zyko0/go-sdl3/sdl"
+	"log"
+	"os"
+
+	"github.com/Zyko0/go-sdl3/bin/binsdl" // Still deferring this
+	"goxelcore/engine" // Import our new engine package
 )
 
 func main() {
-	defer binsdl.Load().Unload() // sdl.LoadLibrary(sdl.Path())
-	defer sdl.Quit()
+	defer binsdl.Load().Unload() // Still deferring this here, as it's from the original example
 
-	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
-		panic(err)
+	// Get engine instance
+	eng := engine.GetInstance()
+
+	// Create CoreParameters (for now, default ones)
+	coreParams := engine.NewCoreParameters()
+	// In future, parse command line arguments into coreParams, mirroring C++ main.cpp
+	// parse_cmdline(argc, argv, coreParameters)
+
+	// Initialize the engine
+	if err := eng.Initialize(coreParams); err != nil {
+		log.Fatalf("Engine initialization failed: %v", err)
+		os.Exit(1)
 	}
+	defer engine.Terminate() // Defer engine termination
 
-	window, renderer, err := sdl.CreateWindowAndRenderer("Hello world", 500, 500, 0)
-	if err != nil {
-		panic(err)
-	}
-	defer renderer.Destroy()
-	defer window.Destroy()
-
-	renderer.SetDrawColor(255, 255, 255, 255)
-
-	sdl.RunLoop(func() error {
-		var event sdl.Event
-
-		for sdl.PollEvent(&event) {
-			if event.Type == sdl.EVENT_QUIT {
-				return sdl.EndLoop
-			}
-		}
-
-		renderer.DebugText(50, 50, "Hello world")
-		renderer.Present()
-
-		return nil
-	})
+	// Run the engine main loop
+	eng.Run()
 }
