@@ -34,18 +34,32 @@ const (
 // Window represents an abstract window.
 type Window struct {
 	sdlWindow   *sdl.Window
-	sdlRenderer *sdl.Renderer
+	sdlRenderer *sdl.Renderer // Will be nil if using OpenGL
+	glContext   sdl.GLContext // Add GL context
 	size        struct{ X, Y int } // Corresponds to glm::ivec2 size
 	mode        WindowMode
 	shouldRefresh bool
 }
 
-// NewSDLWindow creates a new Window abstraction around SDL window and renderer.
+// NewSDLWindow creates a new Window abstraction around SDL window and renderer (for 2D rendering).
+// Keeping this for compatibility or if there are 2D parts.
 func NewSDLWindow(sdlWindow *sdl.Window, sdlRenderer *sdl.Renderer) *Window {
 	w, h := sdlWindow.GetSize()
 	return &Window{
 		sdlWindow:   sdlWindow,
 		sdlRenderer: sdlRenderer,
+		size:        struct{ X, Y int }{X: int(w), Y: int(h)},
+		mode:        WindowModeWindowed, // Default for now
+		shouldRefresh: false,
+	}
+}
+
+// NewSDLWindowWithGL creates a new Window abstraction with an OpenGL context.
+func NewSDLWindowWithGL(sdlWindow *sdl.Window, glContext sdl.GLContext) *Window {
+	w, h := sdlWindow.GetSize()
+	return &Window{
+		sdlWindow:   sdlWindow,
+		glContext:   glContext,
 		size:        struct{ X, Y int }{X: int(w), Y: int(h)},
 		mode:        WindowModeWindowed, // Default for now
 		shouldRefresh: false,
@@ -62,6 +76,11 @@ func (w *Window) GetRenderer() *sdl.Renderer {
 	return w.sdlRenderer
 }
 
+// GetGLContext returns the OpenGL context.
+func (w *Window) GetGLContext() sdl.GLContext {
+	return w.glContext
+}
+
 // GetSize returns the window size.
 func (w *Window) GetSize() (int, int) {
 	return w.size.X, w.size.Y
@@ -70,12 +89,8 @@ func (w *Window) GetSize() (int, int) {
 // SwapBuffers presents the renderer's buffer to the screen.
 // Corresponds to C++ Window::swapBuffers()
 func (w *Window) SwapBuffers() {
-	// In SDL, Present() does the job of swapping buffers for a renderer.
-	// We call Present in the Engine's main loop for now.
-	// This method might be used for direct OpenGL context swapping if we move to that.
-	// For now, it could be a no-op or just call Present if it's not done elsewhere.
-	// Since Engine.Run already calls Present(), this would be redundant or require a change in Engine.Run.
-	// Let's keep it as a stub for now.
+	// For OpenGL, this means swapping the window's buffers.
+	w.sdlWindow.GLSwapWindow()
 }
 
 // IsMaximized returns true if the window is maximized.
