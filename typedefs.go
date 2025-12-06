@@ -20,5 +20,5 @@ type Vec4f struct {
 	X, Y, Z, W float32
 }
 
-// Add other typedefs as needed from C++ typedefs.hpp
-// For now, these are the only ones directly needed by DrawContext.
+// size_t corresponds to C++ size_t
+type size_t uint
