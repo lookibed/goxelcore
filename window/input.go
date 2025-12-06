@@ -21,7 +21,7 @@ type Keycode = sdl.Keycode
 
 // Mousecode corresponds to C++ Mousecode enum in voxelcore/src/window/input.hpp
 // We map them to SDL mouse button codes.
-type Mousecode = sdl.MouseButtonID
+type Mousecode = uint8
 
 // CursorState corresponds to C++ CursorState struct in voxelcore/src/window/input.hpp
 type CursorState struct {

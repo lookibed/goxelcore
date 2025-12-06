@@ -44,7 +44,7 @@ type Window struct {
 // NewSDLWindow creates a new Window abstraction around SDL window and renderer (for 2D rendering).
 // Keeping this for compatibility or if there are 2D parts.
 func NewSDLWindow(sdlWindow *sdl.Window, sdlRenderer *sdl.Renderer) *Window {
-	w, h := sdlWindow.GetSize()
+	w, h := sdlWindow.Size()
 	return &Window{
 		sdlWindow:   sdlWindow,
 		sdlRenderer: sdlRenderer,
@@ -56,7 +56,7 @@ func NewSDLWindow(sdlWindow *sdl.Window, sdlRenderer *sdl.Renderer) *Window {
 
 // NewSDLWindowWithGL creates a new Window abstraction with an OpenGL context.
 func NewSDLWindowWithGL(sdlWindow *sdl.Window, glContext sdl.GLContext) *Window {
-	w, h := sdlWindow.GetSize()
+	w, h := sdlWindow.Size()
 	return &Window{
 		sdlWindow:   sdlWindow,
 		glContext:   glContext,
@@ -90,7 +90,7 @@ func (w *Window) GetSize() (int, int) {
 // Corresponds to C++ Window::swapBuffers()
 func (w *Window) SwapBuffers() {
 	// For OpenGL, this means swapping the window's buffers.
-	w.sdlWindow.GLSwapWindow()
+	w.sdlWindow.GLSwap()
 }
 
 // IsMaximized returns true if the window is maximized.
@@ -131,36 +131,44 @@ func (w *Window) SetShouldClose(flag bool) {
 // Corresponds to C++ Window::setCursor()
 func (w *Window) SetCursor(shape CursorShape) {
 	var sdlCursor *sdl.Cursor
+	var err error // Declare error variable
+
 	switch shape {
 	case CursorShapeArrow:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_ARROW)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_ARROW)
 	case CursorShapeText:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_IBEAM)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_IBEAM)
 	case CursorShapeCrosshair:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_CROSSHAIR)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_CROSSHAIR)
 	case CursorShapePointer:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_HAND)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_HAND)
 	case CursorShapeEWResize:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZEWE)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZEWE)
 	case CursorShapeNSResize:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZENS)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZENS)
 	case CursorShapeNWSEResize:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZENWSE)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZENWSE)
 	case CursorShapeNESWResize:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZENESW)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZENESW)
 	case CursorShapeAllResize:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZEALL)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_SIZEALL)
 	case CursorShapeNotAllowed:
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_NO)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_NO)
 	default:
 		// Default to arrow or log error
-		sdlCursor = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_ARROW)
+		sdlCursor, err = sdl.CreateSystemCursor(sdl.SYSTEM_CURSOR_ARROW) // Handle error here too
 	}
+
+	if err != nil { // Check for error after all assignments
+		fmt.Printf("Failed to create system cursor %v: %v\n", shape, err)
+		return // Exit if cursor creation failed
+	}
+
 	if sdlCursor != nil {
 		sdl.SetCursor(sdlCursor)
 		// sdlCursor.Destroy() // Cursors created with CreateSystemCursor do not need to be freed manually.
 	} else {
-		fmt.Printf("Failed to set cursor shape %v\n", shape)
+		fmt.Printf("Failed to set cursor shape %v (cursor was nil but no error reported)\n", shape)
 	}
 }
 
