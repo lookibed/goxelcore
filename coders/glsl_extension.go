@@ -5,15 +5,9 @@ import (
 	"strings"
 
 	"goxelcore/graphics/core" // For core.Param
+	"goxelcore/engine" // For engine.ResPaths
 	// "goxelcore/io" // For io.path (stubbed for now)
-	// "goxelcore/engine" // For ResPaths (stubbed for now)
 )
-
-// ResPathsStub is a placeholder for ResPaths class.
-// Corresponds to C++ ResPaths class.
-type ResPathsStub struct {
-	// Add fields as needed if ResPaths needs to be ported later
-}
 
 // ProcessingResult corresponds to C++ GLSLExtension::ProcessingResult struct.
 type ProcessingResult struct {
@@ -27,7 +21,7 @@ type GLSLExtension struct {
 	headers map[string]ProcessingResult
 	defines map[string]string
 
-	paths *ResPathsStub // Placeholder for ResPaths
+	paths *engine.ResPaths // Changed from *ResPathsStub to *engine.ResPaths
 	traceOutput bool
 }
 
@@ -42,9 +36,9 @@ func NewGLSLExtension() *GLSLExtension {
 
 // SetPaths sets the resource paths.
 // Corresponds to C++ GLSLExtension::setPaths()
-func (ext *GLSLExtension) SetPaths(paths *ResPathsStub) {
+func (ext *GLSLExtension) SetPaths(paths *engine.ResPaths) { // Changed type
 	ext.paths = paths
-}
+}// ... (rest of the functions are the same) ...
 
 // SetTraceOutput enables or disables trace output.
 // Corresponds to C++ GLSLExtension::setTraceOutput()

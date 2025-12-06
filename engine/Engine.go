@@ -24,6 +24,7 @@ type Engine struct {
 	glContext    sdl.GLContext  // Add OpenGL context
 	project      *Project       // Add Project field
 	windowControl *WindowControl // Add WindowControl field
+	paths        *EnginePaths   // Add EnginePaths field
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -40,6 +41,7 @@ func GetInstance() *Engine {
 			params:   NewCoreParameters(),
 			settings: NewEngineSettings(),
 			project:  NewProject(), // Initialize Project
+			// paths will be initialized in Initialize method as it depends on CoreParameters
 		}
 	})
 	return engineInstance
@@ -51,6 +53,9 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	e.params = coreParameters // Update with provided parameters
 
 	log.Println("Engine: Initializing...")
+
+	// Initialize EnginePaths
+	e.paths = NewEnginePaths(e.params) // Initialize paths
 
 	// Initialize SDL Video for window creation
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
@@ -102,7 +107,7 @@ func (e *Engine) Run() {
 
 		// Poll for events using our Input component
 		e.windowControl.NextFrame(false) // Use WindowControl's nextFrame
-
+		
 		// Check for quit event (e.g., window close button)
 		// For example, if SDLK_ESCAPE is pressed or a binding named "quit" is active
 		if e.input.JustPressed(window.Keycode(sdl.K_ESCAPE)) {
@@ -170,6 +175,13 @@ func (e *Engine) GetGLContext() sdl.GLContext {
 }
 
 // GetProject returns the Project instance.
+// Corresponds to C++ Engine::getProject()
 func (e *Engine) GetProject() *Project {
 	return e.project
+}
+
+// GetPaths returns the EnginePaths instance.
+// Corresponds to C++ Engine::getPaths()
+func (e *Engine) GetPaths() *EnginePaths {
+	return e.paths
 }
