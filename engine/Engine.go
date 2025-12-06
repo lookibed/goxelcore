@@ -11,12 +11,16 @@ import (
 
 	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
+	"goxelcore" // For Vec2u
 	"goxelcore/assets" // Import the assets package
 	"goxelcore/content" // Import the content package
 	"goxelcore/debug" // Import our new debug package
+	"goxelcore/devtools" // Import devtools
+	"goxelcore/graphics/core" // For DrawContext
 	"goxelcore/io" // For io.Path (needed for logger filename)
 	"goxelcore/logic" // Import the logic package for EngineController
 	"goxelcore/window" // Assuming a window package will be created
+	"goxelcore/graphics/ui" // Import ui package
 )
 
 // Engine is the main engine struct, implementing a singleton pattern.
@@ -37,6 +41,8 @@ type Engine struct {
 	assets       *assets.Assets // Add Assets component
 	assetsLoader *assets.AssetsLoader // Add AssetsLoader component
 	content      *content.ContentControl // Add ContentControl component
+	editor       *devtools.Editor // Add editor field
+	gui          *ui.GUI          // Add GUI component
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -56,7 +62,7 @@ func GetInstance() *Engine {
 			time:     Time{},       // Initialize Time
 			logger:   debug.NewLogger("engine"), // Initialize Logger
 			assets:   assets.NewAssets(), // Initialize Assets
-			// paths, controller, assetsLoader, content will be initialized in Initialize method as they depend on the engine itself
+			// paths, controller, assetsLoader, content, editor, gui will be initialized in Initialize method as they depend on the engine itself
 		}
 	})
 	return engineInstance
@@ -112,11 +118,19 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	// Initialize AssetsLoader
 	e.assetsLoader = assets.NewAssetsLoader(e, e.assets, &e.paths.ResPaths)
 
+	// Initialize Editor
+	e.editor = devtools.NewEditor(e) // Initialize editor
+
+	// Initialize GUI
+	e.gui = ui.NewGUI(e)
+
 	// Define postContent callback
 	postContentCallback := func() {
 		e.logger.Info("Engine: Post content load callback triggered (stub).")
 		// In C++, Assets::setup() is called here
 		e.assets.Setup()
+		e.editor.LoadTools() // Call editor's LoadTools
+		e.gui.OnAssetsLoad(e.assets) // Call GUI's OnAssetsLoad
 	}
 
 	// Initialize ContentControl
@@ -164,10 +178,25 @@ func (e *Engine) Run() {
 		// The sdl.PollEvent above in SDLInput.PollEvents() should capture sdl.EVENT_QUIT
 		// and it will set the quitSignal. So this check should be enough.
 
+		// GUI Act (Update logic)
+		w, h := e.window.GetSize()
+		e.gui.Act(float32(e.time.GetDelta()), goxelcore.Vec2u{X: uint32(w), Y: uint32(h)})
+
 		// Placeholder for applicationTick(), updateFrontend(), renderFrame()
 		// For now, just present the renderer
 		gl.ClearColor(0.2, 0.3, 0.3, 1.0) // Example clear color
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+		// GUI Draw
+		// C++ uses DrawContext pctx(nullptr, *window, nullptr);
+		// For now, let's create a dummy DrawContext
+		// We pass e.gui.GetContainer().batch2D. This requires Batch2D to be public.
+		dummyDrawContext := core.NewDrawContext(nil, e.window, e.gui.GetContainer().GetBatch2D()) 
+		e.gui.Draw(*dummyDrawContext, e.assets)
+
+		// GUI PostAct
+		e.gui.PostAct()
+
 
 		e.window.GetWindow().GLSwapWindow() // Swap buffers
 		
@@ -264,4 +293,16 @@ func (e *Engine) GetAssetsLoader() *assets.AssetsLoader {
 // Corresponds to C++ Engine::getContentControl()
 func (e *Engine) GetContentControl() *content.ContentControl {
 	return e.content
+}
+
+// GetEditor returns the Editor instance.
+// Corresponds to C++ GUI::getEditor() and Engine::getEditor()
+func (e *Engine) GetEditor() *devtools.Editor {
+	return e.editor
+}
+
+// GetGUI returns the GUI instance.
+// Corresponds to C++ Engine::getGUI()
+func (e *Engine) GetGUI() *ui.GUI {
+	return e.gui
 }
