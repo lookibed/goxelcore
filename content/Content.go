@@ -1,3 +1,6 @@
 package content
 
-// TODO: Port functionality from C++ to Go"
+// ContentStub is a placeholder for the C++ Content class.
+type ContentStub struct {
+	// Add fields/methods as needed when Content is ported
+}

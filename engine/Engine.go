@@ -11,6 +11,7 @@ import (
 
 	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
+	"goxelcore/assets" // Import the assets package
 	"goxelcore/debug" // Import our new debug package
 	"goxelcore/io" // For io.Path (needed for logger filename)
 	"goxelcore/logic" // Import the logic package for EngineController
@@ -32,6 +33,8 @@ type Engine struct {
 	time         Time           // Add Time component
 	logger       *debug.Logger  // Add Logger component
 	controller   *logic.EngineController // Add EngineController component
+	assets       *assets.Assets // Add Assets component
+	assetsLoader *assets.AssetsLoader // Add AssetsLoader component
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -50,7 +53,8 @@ func GetInstance() *Engine {
 			project:  NewProject(), // Initialize Project
 			time:     Time{},       // Initialize Time
 			logger:   debug.NewLogger("engine"), // Initialize Logger
-			// paths and controller will be initialized in Initialize method as they depend on the engine itself
+			assets:   assets.NewAssets(), // Initialize Assets
+			// paths, controller, assetsLoader will be initialized in Initialize method as they depend on the engine itself
 		}
 	})
 	return engineInstance
@@ -102,6 +106,10 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 
 	// Initialize EngineController
 	e.controller = logic.NewEngineController(e)
+
+	// Initialize AssetsLoader
+	e.assetsLoader = assets.NewAssetsLoader(e, e.assets, &e.paths.ResPaths)
+
 
 	e.logger.Info("Engine: Initialization complete.")
 	return nil
@@ -171,6 +179,9 @@ func Terminate() {
 	debug.Flush() // Flush logs before closing
 
 	if e != nil {
+		if e.assets != nil {
+			e.assets.Delete() // Clean up assets
+		}
 		if e.window != nil {
 			// Destroy GL context
 			if e.glContext != nil {
@@ -224,4 +235,15 @@ func (e *Engine) GetTime() *Time {
 // Corresponds to C++ Engine::getController()
 func (e *Engine) GetController() *logic.EngineController {
 	return e.controller
+}
+
+// GetAssets returns the Assets instance.
+// Corresponds to C++ Engine::getAssets()
+func (e *Engine) GetAssets() *assets.Assets {
+	return e.assets
+}
+
+// GetAssetsLoader returns the AssetsLoader instance.
+func (e *Engine) GetAssetsLoader() *assets.AssetsLoader {
+	return e.assetsLoader
 }
