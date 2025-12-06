@@ -1,15 +1,18 @@
 package main
 
 import (
-	"log"
+	"log" // Keep for Fatalf initially until engine logger is fully ready
 	"os"
 
-	"github.com/Zyko0/go-sdl3/bin/binsdl" // Still deferring this
+	"github.com/Zyko0/go-sdl3/bin/binsdl"
+	"goxelcore/debug"  // Import our debug package
 	"goxelcore/engine" // Import our new engine package
 )
 
 func main() {
-	defer binsdl.Load().Unload() // Still deferring this here, as it's from the original example
+	// Defer SDL library unload.
+	// This is placed here as it's a global SDL operation.
+	defer binsdl.Load().Unload()
 
 	// Get engine instance
 	eng := engine.GetInstance()
@@ -21,10 +24,12 @@ func main() {
 
 	// Initialize the engine
 	if err := eng.Initialize(coreParams); err != nil {
+		// Use standard log.Fatalf before engine's logger is fully initialized
 		log.Fatalf("Engine initialization failed: %v", err)
 		os.Exit(1)
 	}
-	defer engine.Terminate() // Defer engine termination
+	// Defer engine termination, which will now also flush logs
+	defer engine.Terminate() 
 
 	// Run the engine main loop
 	eng.Run()

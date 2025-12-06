@@ -11,6 +11,8 @@ import (
 
 	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
+	"goxelcore/debug" // Import our new debug package
+	"goxelcore/io" // For io.Path (needed for logger filename)
 	"goxelcore/window" // Assuming a window package will be created
 )
 
@@ -27,6 +29,7 @@ type Engine struct {
 	windowControl *WindowControl // Add WindowControl field
 	paths        *EnginePaths   // Add EnginePaths field
 	time         Time           // Add Time component
+	logger       *debug.Logger  // Add Logger component
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -44,6 +47,7 @@ func GetInstance() *Engine {
 			settings: NewEngineSettings(),
 			project:  NewProject(), // Initialize Project
 			time:     Time{},       // Initialize Time
+			logger:   debug.NewLogger("engine"), // Initialize Logger
 			// paths will be initialized in Initialize method as it depends on CoreParameters
 		}
 	})
@@ -55,13 +59,19 @@ func GetInstance() *Engine {
 func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	e.params = coreParameters // Update with provided parameters
 
-	log.Println("Engine: Initializing...")
+	e.logger.Info("Engine: Initializing...")
 
 	// Initialize EnginePaths
 	e.paths = NewEnginePaths(e.params) // Initialize paths
+	
+	// Initialize debug logger to file
+	debug.Init(e.paths.GetUserFilesFolder() + "/latest.log")
+	e.logger.Info("Logger initialized to file: %s/latest.log", e.paths.GetUserFilesFolder())
+
 
 	// Initialize SDL Video for window creation
 	if err := sdl.Init(sdl.INIT_VIDEO); err != nil {
+		e.logger.Error("Failed to initialize SDL: %v", err)
 		return fmt.Errorf("failed to initialize SDL: %w", err)
 	}
 
@@ -78,6 +88,7 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	// Use WindowControl to initialize Window and Input
 	win, inp, err := e.windowControl.Initialize()
 	if err != nil {
+		e.logger.Error("Failed to initialize window and input: %v", err)
 		return fmt.Errorf("failed to initialize window and input: %w", err)
 	}
 	e.window = win
@@ -87,14 +98,14 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	// Initialize time
 	e.time.Set(float64(time.Now().UnixNano()) / float64(time.Second))
 
-	log.Println("Engine: Initialization complete.")
+	e.logger.Info("Engine: Initialization complete.")
 	return nil
 }
 
 // Run starts the main engine loop.
 // Corresponds to C++ Engine::run()
 func (e *Engine) Run() {
-	log.Println("Engine: Starting run loop...")
+	e.logger.Info("Engine: Starting run loop...")
 
 	// Setup signal handler for graceful shutdown
 	sigChan := make(chan os.Signal, 1)
@@ -102,7 +113,7 @@ func (e *Engine) Run() {
 
 	go func() {
 		<-sigChan
-		log.Println("Engine: Received termination signal. Quitting...")
+		e.logger.Info("Engine: Received termination signal. Quitting...")
 		e.quit() // Call the engine's quit method
 	}()
 
@@ -120,7 +131,7 @@ func (e *Engine) Run() {
 		// Check for quit event (e.g., window close button)
 		// For example, if SDLK_ESCAPE is pressed or a binding named "quit" is active
 		if e.input.JustPressed(window.Keycode(sdl.K_ESCAPE)) {
-			log.Println("Escape key pressed. Quitting...")
+			e.logger.Info("Escape key pressed. Quitting...")
 			e.quit()
 		}
 
@@ -138,7 +149,7 @@ func (e *Engine) Run() {
 		return nil
 	})
 
-	log.Println("Engine: Run loop ended.")
+	e.logger.Info("Engine: Run loop ended.")
 }
 
 // quit sets the internal quit signal.
@@ -150,20 +161,23 @@ func (e *Engine) quit() {
 // Terminate performs cleanup before the engine exits.
 // Corresponds to C++ Engine::terminate()
 func Terminate() {
-	log.Println("Engine: Terminating...")
-	if engineInstance != nil {
-		if engineInstance.window != nil {
+	e := GetInstance() // Get the instance to access the logger
+	e.logger.Info("Engine: Terminating...")
+	debug.Flush() // Flush logs before closing
+
+	if e != nil {
+		if e.window != nil {
 			// Destroy GL context
-			if engineInstance.glContext != nil {
-				sdl.GLDeleteContext(engineInstance.glContext)
+			if e.glContext != nil {
+				sdl.GLDeleteContext(e.glContext)
 			}
 			// Destroy window
-			engineInstance.window.GetWindow().Destroy()
+			e.window.GetWindow().Destroy()
 		}
 		// Additional cleanup for input or other components if necessary
 	}
 	sdl.Quit()
-	log.Println("Engine: Termination complete.")
+	e.logger.Info("Engine: Termination complete.")
 }
 
 // GetInput returns the Input system instance.
@@ -199,4 +213,9 @@ func (e *Engine) GetPaths() *EnginePaths {
 // Corresponds to C++ Time::getTime()
 func (e *Engine) GetTime() *Time {
 	return &e.time
+}
+
+// GetLogger returns the Logger instance.
+func (e *Engine) GetLogger() *debug.Logger {
+	return e.logger
 }
