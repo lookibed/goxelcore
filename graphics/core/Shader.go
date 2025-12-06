@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/Zyko0/go-sdl3/gl" // For OpenGL functions
+	gl "github.com/go-gl/gl/v3.3-core/gl"
 )
 
 // Shader represents an OpenGL shader program.

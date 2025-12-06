@@ -3,14 +3,24 @@ package content
 import (
 	"log"
 
-	"goxelcore/engine" // For EnginePaths and Project
 	"goxelcore/io"     // For io.Path
 	"goxelcore/window" // For Input
 )
 
+// EnginePathsInterface abstracts engine.EnginePaths
+type EnginePathsInterface interface {
+	GetUserFilesFolder() string
+	// Add other methods from EnginePaths as needed
+}
+
+// ProjectInterface abstracts engine.Project
+type ProjectInterface interface {
+	// Add methods from Project as needed
+}
+
 // ContentControl corresponds to C++ ContentControl class.
 type ContentControl struct {
-	paths *engine.EnginePaths // C++ uses reference, Go uses pointer
+	paths EnginePathsInterface // C++ uses reference, Go uses interface
 	input *window.InputSDL    // C++ uses Input*, Go uses concrete type for now
 	content *ContentStub      // C++ uses std::unique_ptr<Content>
 	postContent func()        // C++ uses std::function<void()>
@@ -23,8 +33,8 @@ type ContentControl struct {
 // NewContentControl creates a new ContentControl instance.
 // Corresponds to C++ ContentControl constructor.
 func NewContentControl(
-	project *engine.Project, // C++ uses const Project&
-	paths *engine.EnginePaths,
+	project ProjectInterface, // C++ uses const Project&
+	paths EnginePathsInterface,
 	input *window.InputSDL, // C++ uses Input*
 	postContent func(),
 ) *ContentControl {

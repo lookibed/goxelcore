@@ -5,7 +5,6 @@ import (
 	"log"
 	"strings"
 
-	"goxelcore/engine"          // For engine.ResPaths
 	"goxelcore/graphics/core" // For core.Param
 	"goxelcore/io"            // For io.Path, io.ReadString
 )
@@ -16,12 +15,17 @@ type ProcessingResult struct {
 	Params map[string]core.Param // Assuming core.Param is defined in graphics/core package
 }
 
+// ResPathsInterface is an interface to abstract engine.ResPaths
+type ResPathsInterface interface {
+	Find(path string) io.Path
+}
+
 // GLSLExtension corresponds to C++ GLSLExtension class in voxelcore/src/coders/GLSLExtension.hpp
 type GLSLExtension struct {
 	headers map[string]ProcessingResult
 	defines map[string]string
 
-	paths       *engine.ResPaths // Changed from *ResPathsStub to *engine.ResPaths
+	paths       ResPathsInterface // Use interface instead of direct engine dependency
 	traceOutput bool
 }
 
@@ -39,7 +43,7 @@ func NewGLSLExtension() *GLSLExtension {
 
 // SetPaths sets the resource paths.
 // Corresponds to C++ GLSLExtension::setPaths()
-func (ext *GLSLExtension) SetPaths(paths *engine.ResPaths) {
+func (ext *GLSLExtension) SetPaths(paths ResPathsInterface) {
 	ext.paths = paths
 }
 

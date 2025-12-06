@@ -9,9 +9,7 @@ import (
 	"goxelcore/coders"
 	"goxelcore/content"
 	"goxelcore/data"
-	"goxelcore/engine"
 	"goxelcore/io"
-	"goxelcore/graphics/ui"
 	// "goxelcore/interfaces" // For Task (stubbed)
 )
 
@@ -28,7 +26,7 @@ type AssetCfg interface {
 
 // LayoutCfg corresponds to C++ LayoutCfg struct.
 type LayoutCfg struct {
-	GUI *ui.GUIStub
+	GUI interface{} // Placeholder for ui.GUIStub - avoids import cycle
 	Env interface{} // scriptenv is complex, use interface{} for now
 }
 
@@ -72,21 +70,33 @@ type ALoaderEntry struct {
 	Config   AssetCfg
 }
 
+// EngineInterface abstracts engine.Engine
+type EngineInterface interface {
+	GetLogger() interface{} // Placeholder - would need proper logger interface
+	// Add other methods from Engine that are needed
+}
+
+// ResPathsInterface abstracts engine.ResPaths
+type ResPathsInterface interface {
+	Find(path string) io.Path
+	// Add other methods from ResPaths as needed
+}
+
 // AssetsLoader corresponds to C++ AssetsLoader class.
 type AssetsLoader struct {
-	engine  *engine.Engine
+	engine  EngineInterface
 	assets  *Assets
 	loaders map[AssetType]ALoaderFunc
 	entries chan ALoaderEntry // Using channel for queue
 	enqueued sync.Map // std::set<std::pair<AssetType, std::string>>
-	paths   *engine.ResPaths
-	
+	paths   ResPathsInterface
+
 	queueMutex sync.Mutex // Protects entries and enqueued
 }
 
 // NewAssetsLoader creates a new AssetsLoader instance.
 // Corresponds to C++ AssetsLoader constructor.
-func NewAssetsLoader(eng *engine.Engine, assets *Assets, paths *engine.ResPaths) *AssetsLoader {
+func NewAssetsLoader(eng EngineInterface, assets *Assets, paths ResPathsInterface) *AssetsLoader {
 	al := &AssetsLoader{
 		engine:  eng,
 		assets:  assets,
@@ -191,7 +201,7 @@ func (al *AssetsLoader) StartTask(onDone func()) *TaskStub {
 
 // GetPaths returns the ResPaths instance.
 // Corresponds to C++ AssetsLoader::getPaths().
-func (al *AssetsLoader) GetPaths() *engine.ResPaths {
+func (al *AssetsLoader) GetPaths() ResPathsInterface {
 	return al.paths
 }
 

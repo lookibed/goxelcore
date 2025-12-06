@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"goxelcore/engine" // For EnginePaths
 	"goxelcore/io"     // For io.Path
 	"goxelcore/util"   // For Quote (if needed, or just format strings)
 	// "goxelcore/data" // For dv.value (stubbed for now)
@@ -185,7 +184,7 @@ func WorldPacksList(folder io.Path) []string {
 
 // FindPack finds a content pack in given paths. (Stub for now)
 // Corresponds to C++ static io::path findPack(...).
-func FindPack(paths *engine.EnginePaths, worldDir io.Path, name string) io.Path {
+func FindPack(paths EnginePathsInterface, worldDir io.Path, name string) io.Path {
 	log.Printf("ContentPack.FindPack: Stub for name '%s'\n", name)
 	return io.Path{}
 }

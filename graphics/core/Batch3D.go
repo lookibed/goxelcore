@@ -6,7 +6,7 @@ import (
 	"unsafe"
 
 	gl "github.com/go-gl/gl/v3.3-core/gl"
-	goxelcore // For Vec2f, Vec3f, Vec4f, size_t
+	"goxelcore" // For Vec2f, Vec3f, Vec4f, size_t
 	"goxelcore/maths" // For UVRegion
 )
 
