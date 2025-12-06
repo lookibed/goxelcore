@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/Zyko0/go-sdl3/gl" // For OpenGL functions
-	// "goxelcore/typedefs" // For glm types like glm.mat4, glm.vec2 etc. (will use slices/arrays for now)
 )
 
 // Shader represents an OpenGL shader program.

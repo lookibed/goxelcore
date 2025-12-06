@@ -22,6 +22,8 @@ type Engine struct {
 	window       *window.Window // Placeholder for the Window component
 	input        window.Input   // Add input field
 	glContext    sdl.GLContext  // Add OpenGL context
+	project      *Project       // Add Project field
+	windowControl *WindowControl // Add WindowControl field
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -37,6 +39,7 @@ func GetInstance() *Engine {
 		engineInstance = &Engine{
 			params:   NewCoreParameters(),
 			settings: NewEngineSettings(),
+			project:  NewProject(), // Initialize Project
 		}
 	})
 	return engineInstance
@@ -61,42 +64,17 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	sdl.GLSetAttribute(sdl.GL_DOUBLEBUFFER, 1)
 	sdl.GLSetAttribute(sdl.GL_DEPTH_SIZE, 24)
 
-	// For now, using the display settings directly from EngineSettings
-	// C++ uses DisplaySettings* settings and a title.
-	displaySettings := e.settings.Display
-	width := displaySettings.Width.Value
-	height := displaySettings.Height.Value
-	title := "GoxelCore" // Default title, later can be derived from CoreParameters or other settings
+	// Initialize WindowControl
+	e.windowControl = NewWindowControl(e)
 
-	// Create SDL window with OpenGL flag
-	sdlWindow, err := sdl.CreateWindow(title, width, height, sdl.WINDOW_OPENGL)
+	// Use WindowControl to initialize Window and Input
+	win, inp, err := e.windowControl.Initialize()
 	if err != nil {
-		return fmt.Errorf("failed to create SDL window: %w", err)
+		return fmt.Errorf("failed to initialize window and input: %w", err)
 	}
-	// No sdlRenderer for OpenGL context, use sdlWindow directly for GLContext
-
-	// Create OpenGL context
-	glContext, err := sdlWindow.GLCreateContext()
-	if err != nil {
-		return fmt.Errorf("failed to create OpenGL context: %w", err)
-	}
-	e.glContext = glContext
-
-	// Make the context current
-	if err := sdlWindow.GLMakeCurrent(glContext); err != nil {
-		return fmt.Errorf("failed to make OpenGL context current: %w", err)
-	}
-
-	// Initialize GL bindings
-	if err := gl.Init(); err != nil {
-		return fmt.Errorf("failed to initialize GL bindings: %w", err)
-	}
-
-	// Create our window abstraction
-	e.window = window.NewSDLWindowWithGL(sdlWindow, glContext) // New constructor for window.Window
-	
-	// Initialize Input component
-	e.input = window.NewSDLInput()
+	e.window = win
+	e.input = inp
+	e.glContext = win.GetGLContext() // Get GLContext from the initialized window
 
 	log.Println("Engine: Initialization complete.")
 	return nil
@@ -123,8 +101,8 @@ func (e *Engine) Run() {
 		}
 
 		// Poll for events using our Input component
-		e.input.PollEvents(false) // Assuming waitForRefresh = false for now
-		
+		e.windowControl.NextFrame(false) // Use WindowControl's nextFrame
+
 		// Check for quit event (e.g., window close button)
 		// For example, if SDLK_ESCAPE is pressed or a binding named "quit" is active
 		if e.input.JustPressed(window.Keycode(sdl.K_ESCAPE)) {
@@ -189,4 +167,9 @@ func (e *Engine) GetWindow() *window.Window {
 // GetGLContext returns the OpenGL context.
 func (e *Engine) GetGLContext() sdl.GLContext {
 	return e.glContext
+}
+
+// GetProject returns the Project instance.
+func (e *Engine) GetProject() *Project {
+	return e.project
 }
