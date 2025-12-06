@@ -1,4 +1,6 @@
-## Цель: Портирование C++ кода из [`./voxelcore/`](https://github.com/MihailRis/voxelcore) в `./goxelcore/`.
+# GoxelCore
+
+## Цель: Портирование движка [`VoxelCore`](https://github.com/MihailRis/voxelcore) из C++ в GO
 
 ### Принципы:
 - Структура файлов и названия сохраняются 1:1.
