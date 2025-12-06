@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"sync"
-	"time"
 )
 
 // LogLevel corresponds to C++ LogLevel enum in voxelcore/src/debug/Logger.hpp
