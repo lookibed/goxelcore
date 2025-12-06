@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time" // Import Go's time package
 
 	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
@@ -25,6 +26,7 @@ type Engine struct {
 	project      *Project       // Add Project field
 	windowControl *WindowControl // Add WindowControl field
 	paths        *EnginePaths   // Add EnginePaths field
+	time         Time           // Add Time component
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -41,6 +43,7 @@ func GetInstance() *Engine {
 			params:   NewCoreParameters(),
 			settings: NewEngineSettings(),
 			project:  NewProject(), // Initialize Project
+			time:     Time{},       // Initialize Time
 			// paths will be initialized in Initialize method as it depends on CoreParameters
 		}
 	})
@@ -81,6 +84,9 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	e.input = inp
 	e.glContext = win.GetGLContext() // Get GLContext from the initialized window
 
+	// Initialize time
+	e.time.Set(float64(time.Now().UnixNano()) / float64(time.Second))
+
 	log.Println("Engine: Initialization complete.")
 	return nil
 }
@@ -104,6 +110,9 @@ func (e *Engine) Run() {
 		if e.quitSignal {
 			return sdl.EndLoop
 		}
+
+		// Update time
+		e.time.Update(float64(time.Now().UnixNano()) / float64(time.Second))
 
 		// Poll for events using our Input component
 		e.windowControl.NextFrame(false) // Use WindowControl's nextFrame
@@ -184,4 +193,10 @@ func (e *Engine) GetProject() *Project {
 // Corresponds to C++ Engine::getPaths()
 func (e *Engine) GetPaths() *EnginePaths {
 	return e.paths
+}
+
+// GetTime returns the Time instance.
+// Corresponds to C++ Time::getTime()
+func (e *Engine) GetTime() *Time {
+	return &e.time
 }
