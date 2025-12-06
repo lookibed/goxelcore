@@ -26,4 +26,4 @@ type Vec4f struct {
 }
 
 // size_t corresponds to C++ size_t
-type size_t uint
+type SizeT uint

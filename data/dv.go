@@ -251,16 +251,16 @@ func (v Value) Has(key string) bool {
 
 // Size returns the size of a list or object.
 // Corresponds to C++ value::size()
-func (v Value) Size() goxelcore.size_t {
+func (v Value) Size() goxelcore.SizeT {
 	switch v.Type {
 	case ValueTypeList:
-		return goxelcore.size_t(len(v.Value.([]Value)))
+		return goxelcore.SizeT(len(v.Value.([]Value)))
 	case ValueTypeObject:
-		return goxelcore.size_t(len(v.Value.(map[string]Value)))
+		return goxelcore.SizeT(len(v.Value.(map[string]Value)))
 	case ValueTypeString:
-		return goxelcore.size_t(len(v.Value.(string)))
+		return goxelcore.SizeT(len(v.Value.(string)))
 	case ValueTypeBytes:
-		return goxelcore.size_t(len(v.Value.([]byte)))
+		return goxelcore.SizeT(len(v.Value.([]byte)))
 	default:
 		return 0
 	}
