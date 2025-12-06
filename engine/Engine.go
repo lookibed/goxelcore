@@ -19,6 +19,7 @@ type Engine struct {
 	settings     *EngineSettings
 	quitSignal   bool
 	window       *window.Window // Placeholder for the Window component
+	input        window.Input   // Add input field
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -58,19 +59,17 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	height := displaySettings.Height.Value
 	title := "GoxelCore" // Default title, later can be derived from CoreParameters or other settings
 
-	// Initialize the Window and Input components
-	// The C++ version returns a tuple of Window and Input
-	// For now, let's create a basic SDL window directly. This will be refactored
-	// to use a dedicated window package later.
+	// Create SDL window and renderer
 	sdlWindow, sdlRenderer, err := sdl.CreateWindowAndRenderer(title, width, height, 0)
 	if err != nil {
 		return fmt.Errorf("failed to create SDL window and renderer: %w", err)
 	}
-	// Defer destroy actions until Terminate is called
-	// defer sdlRenderer.Destroy()
-	// defer sdlWindow.Destroy()
 
-	e.window = window.NewSDLWindow(sdlWindow, sdlRenderer) // Placeholder for a Go window abstraction
+	// Create our window abstraction
+	e.window = window.NewSDLWindow(sdlWindow, sdlRenderer) 
+	
+	// Initialize Input component
+	e.input = window.NewSDLInput()
 
 	log.Println("Engine: Initialization complete.")
 	return nil
@@ -96,13 +95,19 @@ func (e *Engine) Run() {
 			return sdl.EndLoop
 		}
 
-		var event sdl.Event
-		for sdl.PollEvent(&event) {
-			if event.Type == sdl.EVENT_QUIT {
-				e.quit() // Set quit signal
-			}
-			// Handle other events here
+		// Poll for events using our Input component
+		e.input.PollEvents(false) // Assuming waitForRefresh = false for now
+		
+		// Check for quit event (e.g., window close button)
+		// For example, if SDLK_ESCAPE is pressed or a binding named "quit" is active
+		if e.input.JustPressed(window.Keycode(sdl.K_ESCAPE)) {
+			log.Println("Escape key pressed. Quitting...")
+			e.quit()
 		}
+
+		// In C++, the quit event is often handled in the main event loop
+		// The sdl.PollEvent above in SDLInput.PollEvents() should capture sdl.EVENT_QUIT
+		// and it will set the quitSignal. So this check should be enough.
 
 		// Placeholder for applicationTick(), updateFrontend(), renderFrame()
 		// For now, just present the renderer
@@ -127,14 +132,25 @@ func (e *Engine) quit() {
 // Corresponds to C++ Engine::terminate()
 func Terminate() {
 	log.Println("Engine: Terminating...")
-	if engineInstance != nil && engineInstance.window != nil {
-		engineInstance.window.GetRenderer().Destroy()
-		engineInstance.window.GetWindow().Destroy()
+	if engineInstance != nil {
+		if engineInstance.window != nil {
+			engineInstance.window.GetRenderer().Destroy()
+			engineInstance.window.GetWindow().Destroy()
+		}
+		// Additional cleanup for input or other components if necessary
 	}
-	// For now, directly calling sdl.Quit() and binsdl.Load().Unload()
-	// In a more structured port, these might be managed differently.
 	sdl.Quit()
-	// binsdl.Load().Unload() // This seems to be for loading/unloading the SDL shared library, not a direct C++ equivalent.
-	// It's already deferred in goxelcore/main.go in the original example, so I'll keep it there for now or rethink its placement.
 	log.Println("Engine: Termination complete.")
+}
+
+// GetInput returns the Input system instance.
+// Corresponds to C++ Engine::getInput()
+func (e *Engine) GetInput() window.Input {
+    return e.input
+}
+
+// GetWindow returns the Window instance.
+// Corresponds to C++ Engine::getWindow()
+func (e *Engine) GetWindow() *window.Window {
+    return e.window
 }
