@@ -1,0 +1,13 @@
+This software uses the following third-party libraries:
+
+1. SDL3 (Simple DirectMedia Layer)
+   Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+   Licensed under the zlib license: https://www.libsdl.org/license.php
+
+2. go-sdl3 (Go bindings for SDL3)
+   Copyright (c) 2024 Zyko0
+   Licensed under the MIT license: https://github.com/Zyko0/go-sdl3/blob/master/LICENSE
+
+3. VoxelCore (C++ Opengl Engine)
+   Copyright (c) 2025 MihalRis
+   Licensed under the NO license
