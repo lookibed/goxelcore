@@ -1,5 +1,3 @@
-
-
 ## Цель: Портирование C++ кода из [`./voxelcore/`](https://github.com/MihailRis/voxelcore) в `./goxelcore/`.
 
 ### Принципы:
@@ -14,7 +12,8 @@
 - **Структура проекта:** Создана зеркальная иерархия папок и пустые Go-заглушки для всех C++ файлов.
 - **Настройки и База:** Портированы `CoreParameters`, `Settings`, `EngineSettings`, `Typedefs`.
 - **Окно и Ввод:** Реализованы `Window`, `WindowControl` и подсистема `Input` (SDL3).
-- **Движок (Engine):** Настроена инициализация контекста OpenGL, тайминги (`Time`), логирование (`Logger`) и пути к ресурсам (`ResPaths`).
+- **Движок (Engine):** Настроена инициализация контекста OpenGL, тайминги (`Time`), логирование (`Logger`), пути к ресурсам (`ResPaths`), и управление основным циклом (`EngineController`).
+- **Загрузка ресурсов (Assets):** Портированы `Assets` (хранилище активов) и `AssetsLoader` (загрузчик ассетов, включая базовый парсер GLSL).
 - **Графическое ядро:** Портированы компоненты:
     - `Shader` (включая парсинг GLSL), `DrawContext`, `Commons`.
     - `ImageData`, `Texture`, `UVRegion`.
@@ -26,7 +25,5 @@
 
 ## Следующие шаги
 
-1.  **Портировать `EngineController`** (`logic/EngineController`): Основная логика управления движком.
-2.  **Портировать `Assets`** (`assets/Assets`): Загрузчики ресурсов.
-3.  **Портировать `ContentControl`** (`content/ContentControl`): Управление контентом игры.
-4.  **Портировать `GUI`** (`graphics/ui/GUI`): Пользовательский интерфейс.
+1.  **Портировать `ContentControl`** (`content/ContentControl`): Управление контентом игры.
+2.  **Портировать `GUI`** (`graphics/ui/GUI`): Пользовательский интерфейс.
