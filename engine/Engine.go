@@ -12,6 +12,7 @@ import (
 	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
 	"goxelcore/assets" // Import the assets package
+	"goxelcore/content" // Import the content package
 	"goxelcore/debug" // Import our new debug package
 	"goxelcore/io" // For io.Path (needed for logger filename)
 	"goxelcore/logic" // Import the logic package for EngineController
@@ -35,6 +36,7 @@ type Engine struct {
 	controller   *logic.EngineController // Add EngineController component
 	assets       *assets.Assets // Add Assets component
 	assetsLoader *assets.AssetsLoader // Add AssetsLoader component
+	content      *content.ContentControl // Add ContentControl component
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -54,7 +56,7 @@ func GetInstance() *Engine {
 			time:     Time{},       // Initialize Time
 			logger:   debug.NewLogger("engine"), // Initialize Logger
 			assets:   assets.NewAssets(), // Initialize Assets
-			// paths, controller, assetsLoader will be initialized in Initialize method as they depend on the engine itself
+			// paths, controller, assetsLoader, content will be initialized in Initialize method as they depend on the engine itself
 		}
 	})
 	return engineInstance
@@ -109,6 +111,16 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 
 	// Initialize AssetsLoader
 	e.assetsLoader = assets.NewAssetsLoader(e, e.assets, &e.paths.ResPaths)
+
+	// Define postContent callback
+	postContentCallback := func() {
+		e.logger.Info("Engine: Post content load callback triggered (stub).")
+		// In C++, Assets::setup() is called here
+		e.assets.Setup()
+	}
+
+	// Initialize ContentControl
+	e.content = content.NewContentControl(e.project, e.paths, e.input.(*window.SDLInput), postContentCallback)
 
 
 	e.logger.Info("Engine: Initialization complete.")
@@ -246,4 +258,10 @@ func (e *Engine) GetAssets() *assets.Assets {
 // GetAssetsLoader returns the AssetsLoader instance.
 func (e *Engine) GetAssetsLoader() *assets.AssetsLoader {
 	return e.assetsLoader
+}
+
+// GetContentControl returns the ContentControl instance.
+// Corresponds to C++ Engine::getContentControl()
+func (e *Engine) GetContentControl() *content.ContentControl {
+	return e.content
 }
