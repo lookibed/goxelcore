@@ -10,6 +10,11 @@ type Vec2f struct {
 	X, Y float32
 }
 
+// Vec2i corresponds to glm::ivec2
+type Vec2i struct {
+	X, Y int
+}
+
 // Vec3f corresponds to glm::vec3
 type Vec3f struct {
 	X, Y, Z float32
