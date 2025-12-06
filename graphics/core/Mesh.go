@@ -5,7 +5,8 @@ import (
 	"log"
 	"unsafe"
 
-	gl "github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/Zyko0/go-sdl3/gl"
+	"goxelcore" // Add this import
 )
 
 // MeshStats corresponds to C++ MeshStats struct in voxelcore/src/graphics/core/Mesh.hpp
@@ -17,7 +18,7 @@ var MeshStats = struct {
 // IndexBufferData corresponds to C++ IndexBufferData struct in voxelcore/src/graphics/core/Mesh.hpp
 type IndexBufferData struct {
 	Indices      []uint32 // Pointer in C++, slice in Go
-	IndicesCount size_t   // size_t from C++ typedefs.hpp
+	IndicesCount goxelcore.SizeT   // size_t from C++ typedefs.hpp
 }
 
 // Mesh corresponds to C++ template class Mesh<VertexStructure> in voxelcore/src/graphics/core/Mesh.hpp
@@ -25,13 +26,13 @@ type Mesh struct {
 	vao         uint32
 	vbo         uint32
 	ibos        []IndexBuffer // For multiple index buffers
-	vertexCount size_t
+	vertexCount goxelcore.SizeT
 }
 
 // IndexBuffer internal struct
 type IndexBuffer struct {
 	ibo        uint32
-	indexCount size_t
+	indexCount goxelcore.SizeT
 }
 
 // NewMesh creates a new Mesh from MeshData.
@@ -98,7 +99,7 @@ func NewMesh(data *MeshData) (*Mesh, error) {
 		gl.GenBuffers(1, &ibo)
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, len(indicesData)*int(unsafe.Sizeof(uint32(0))), gl.Ptr(indicesData), gl.STATIC_DRAW)
-		ibos[i] = IndexBuffer{ibo: ibo, indexCount: size_t(len(indicesData))}
+		ibos[i] = IndexBuffer{ibo: ibo, indexCount: goxelcore.SizeT(len(indicesData))}
 	}
 
 	gl.BindVertexArray(0)
@@ -110,14 +111,14 @@ func NewMesh(data *MeshData) (*Mesh, error) {
 		vao:         vao,
 		vbo:         vbo,
 		ibos:        ibos,
-		vertexCount: size_t(data.GetVertexCount()),
+		vertexCount: goxelcore.SizeT(data.GetVertexCount()),
 	}, nil
 }
 
 // NewMeshFromBuffers creates a new Mesh from raw buffers.
 // Corresponds to C++ Mesh(const VertexStructure* vertexBuffer, size_t vertices, std::vector<IndexBufferData> indices)
 // and Mesh(const VertexStructure* vertexBuffer, size_t vertices)
-func NewMeshFromBuffers(vertexBuffer []byte, vertexCount size_t, indexBufferData []IndexBufferData, attrs []VertexAttribute) (*Mesh, error) {
+func NewMeshFromBuffers(vertexBuffer []byte, vertexCount goxelcore.SizeT, indexBufferData []IndexBufferData, attrs []VertexAttribute) (*Mesh, error) {
 	md := NewMeshData(vertexBuffer, make([][]uint32, 0), attrs) // Create MeshData temporarily
 	md.Indices = make([][]uint32, len(indexBufferData))
 	for i, ibd := range indexBufferData {
@@ -130,7 +131,7 @@ func NewMeshFromBuffers(vertexBuffer []byte, vertexCount size_t, indexBufferData
 
 // Reload updates GL vertex and index buffers data.
 // Corresponds to C++ Mesh::reload()
-func (m *Mesh) Reload(vertexBuffer []byte, vertexCount size_t, indexBufferData []IndexBufferData, attrs []VertexAttribute) error {
+func (m *Mesh) Reload(vertexBuffer []byte, vertexCount goxelcore.SizeT, indexBufferData []IndexBufferData, attrs []VertexAttribute) error {
 	gl.BindVertexArray(m.vao)
 
 	// Reload VBO
