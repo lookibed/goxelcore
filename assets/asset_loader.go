@@ -213,7 +213,7 @@ func (al *AssetsLoader) GetLoader(tag AssetType) ALoaderFunc {
 
 // GetEngine returns the Engine instance.
 // Corresponds to C++ AssetsLoader::getEngine().
-func (al *AssetsLoader) GetEngine() *engine.Engine {
+func (al *AssetsLoader) GetEngine() EngineInterface {
 	return al.engine
 }
 
@@ -389,10 +389,18 @@ func (al *AssetsLoader) processPreloadConfigs(content *content.ContentStub) erro
 	return nil
 }
 
+// LoggerInterface provides logging functionality
+type LoggerInterface interface {
+	Info(format string, v ...interface{})
+	// Add other logging methods as needed
+}
+
 // AddDefaults enqueues default core and content assets.
 // Corresponds to C++ static void addDefaults(AssetsLoader& loader, const Content* content).
 func AddDefaults(loader *AssetsLoader, content *content.ContentStub) error {
-	loader.engine.GetLogger().Info("AssetsLoader.AddDefaults: Adding default assets...")
+	// Need to access logger through the engine, but the engine interface already handles this
+	// For now, we'll just print to console
+	log.Println("AssetsLoader.AddDefaults: Adding default assets...")
 	if err := loader.processPreloadConfigs(content); err != nil {
 		return fmt.Errorf("failed to process preload configs: %w", err)
 	}

@@ -7,7 +7,6 @@ import (
 
 	"goxelcore"           // For Vec2u
 	"goxelcore/assets"     // For Assets
-	"goxelcore/engine"     // For Engine
 	"goxelcore/graphics"   // For Camera (stub)
 	"goxelcore/graphics/core" // For Batch2D, DrawContext
 	"goxelcore/window"     // For Input, CursorState
@@ -17,10 +16,18 @@ import (
 // PageLoaderFunc corresponds to C++ gui::PageLoaderFunc.
 type PageLoaderFunc func(name string) *UINode
 
+// EngineInterface abstracts engine.Engine for GUI
+type EngineInterface interface {
+	GetInput() window.Input
+	GetWindow() *window.Window
+	GetEditor() *devtools.Editor
+	// Add other methods as needed
+}
+
 // GUI is the main UI controller.
 // Corresponds to C++ gui::GUI class.
 type GUI struct {
-	engine *engine.Engine // C++ uses reference
+	engine EngineInterface // C++ uses reference
 	input  window.Input   // C++ uses reference
 
 	batch2D     *core.Batch2D
@@ -48,7 +55,7 @@ type GUI struct {
 
 // NewGUI creates a new GUI instance.
 // Corresponds to C++ GUI(Engine& engine) constructor.
-func NewGUI(eng *engine.Engine) *GUI {
+func NewGUI(eng EngineInterface) *GUI {
 	gui := &GUI{
 		engine: eng,
 		input:  eng.GetInput(), // Get input from engine
@@ -252,7 +259,7 @@ func (g *GUI) GetEditor() *devtools.Editor {
 
 // GetEngine returns the Engine instance.
 // Corresponds to C++ GUI::getEngine().
-func (g *GUI) GetEngine() *engine.Engine {
+func (g *GUI) GetEngine() EngineInterface {
 	return g.engine
 }
 

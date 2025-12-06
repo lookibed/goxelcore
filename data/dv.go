@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"reflect"
-	"strconv"
 
 	"goxelcore" // For size_t (ubyte, integer_t, number_t)
 )
@@ -73,7 +72,7 @@ func (v *Value) Set(data interface{}) {
 		return
 	}
 
-	sswitch val := data.(type) {
+	switch val := data.(type) {
 	case int, int8, int16, int32, int64:
 		v.Type = ValueTypeInteger
 		v.Value = reflect.ValueOf(val).Int()

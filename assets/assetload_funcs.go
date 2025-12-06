@@ -10,7 +10,7 @@ import (
 // Corresponds to C++ assetload::shader.
 func ShaderLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -28,7 +28,7 @@ func ShaderLoaderFunc(
 // Corresponds to C++ assetload::texture.
 func TextureLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -45,7 +45,7 @@ func TextureLoaderFunc(
 // Corresponds to C++ assetload::font.
 func FontLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -58,7 +58,7 @@ func FontLoaderFunc(
 // Corresponds to C++ assetload::atlas.
 func AtlasLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -71,7 +71,7 @@ func AtlasLoaderFunc(
 // Corresponds to C++ assetload::layout.
 func LayoutLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -84,7 +84,7 @@ func LayoutLoaderFunc(
 // Corresponds to C++ assetload::sound.
 func SoundLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -97,7 +97,7 @@ func SoundLoaderFunc(
 // Corresponds to C++ assetload::model.
 func ModelLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,
@@ -110,7 +110,7 @@ func ModelLoaderFunc(
 // Corresponds to C++ assetload::posteffect.
 func PostEffectLoaderFunc(
 	loader *AssetsLoader,
-	paths *engine.ResPaths,
+	paths ResPathsInterface,
 	filename string,
 	alias string,
 	config AssetCfg,

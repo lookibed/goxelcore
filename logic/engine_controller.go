@@ -2,7 +2,6 @@ package logic
 
 import (
 	"log" // Using standard log for now
-	"goxelcore/engine" // For the Engine type
 	// "goxelcore/content" // For ContentReport
 	// "goxelcore/world" // For World and LevelController
 )
@@ -24,16 +23,21 @@ type LevelControllerStub struct {
 }
 
 
+// EngineInterface abstracts engine.Engine for EngineController
+type EngineInterface interface {
+	// Add methods required by EngineController
+}
+
 // EngineController corresponds to C++ EngineController class in voxelcore/src/logic/EngineController.hpp
 type EngineController struct {
-	engine *engine.Engine // Reference to the engine instance
+	engine EngineInterface // Reference to the engine instance
 
 	localPlayer int64
 }
 
 // NewEngineController creates a new EngineController instance.
 // Corresponds to C++ EngineController(Engine& engine) constructor.
-func NewEngineController(eng *engine.Engine) *EngineController {
+func NewEngineController(eng EngineInterface) *EngineController {
 	return &EngineController{
 		engine:      eng,
 		localPlayer: -1, // Default value

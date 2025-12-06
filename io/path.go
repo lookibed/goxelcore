@@ -30,7 +30,7 @@ type Path struct {
 // Corresponds to C++ io::path(std::string str) constructor.
 func NewPath(p string) Path {
 	// Normalize path separators to '/' as in C++ version
-	p = strings.ReplaceAll(p, "\", "/")
+	p = strings.ReplaceAll(p, "\\", "/")
 
 	colonPos := strings.Index(p, ":")
 	if colonPos == -1 {
@@ -116,7 +116,7 @@ func (p Path) IsEmptyOrInvalid() bool {
 // Join concatenates a child path to the current path.
 // Corresponds to C++ operator/
 func (p Path) Join(child string) Path {
-	child = strings.ReplaceAll(child, "\", "/")
+	child = strings.ReplaceAll(child, "\\", "/")
 	if p.IsEmpty() {
 		return NewPath(child)
 	}
