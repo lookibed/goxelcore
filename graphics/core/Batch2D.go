@@ -5,7 +5,7 @@ import (
 	"log"
 	"unsafe"
 
-	"github.com/Zyko0/go-sdl3/gl"
+	gl "github.com/go-gl/gl/v3.3-core/gl"
 	"goxelcore" // For Vec2f, Vec4f
 	"goxelcore/maths" // For UVRegion
 )

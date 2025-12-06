@@ -5,7 +5,7 @@ import (
 	"log"
 	"goxelcore/maths" // For UVRegion
 
-	"github.com/Zyko0/go-sdl3/gl"
+	gl "github.com/go-gl/gl/v3.3-core/gl"
 )
 
 // Texture corresponds to C++ Texture class in voxelcore/src/graphics/core/Texture.hpp

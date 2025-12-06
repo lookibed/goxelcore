@@ -5,7 +5,7 @@ import (
 	"log"
 	"unsafe"
 
-	"github.com/Zyko0/go-sdl3/gl"
+	gl "github.com/go-gl/gl/v3.3-core/gl"
 )
 
 // MeshStats corresponds to C++ MeshStats struct in voxelcore/src/graphics/core/Mesh.hpp

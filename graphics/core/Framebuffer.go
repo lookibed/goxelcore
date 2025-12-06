@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Zyko0/go-sdl3/gl"
+	gl "github.com/go-gl/gl/v3.3-core/gl"
 )
 
 // Framebuffer corresponds to C++ Framebuffer class in voxelcore/src/graphics/core/Framebuffer.hpp

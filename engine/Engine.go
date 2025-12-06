@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"time" // Import Go's time package
 
-	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
 	"goxelcore" // For Vec2u
 	"goxelcore/assets" // Import the assets package
@@ -184,22 +183,28 @@ func (e *Engine) Run() {
 
 		// Placeholder for applicationTick(), updateFrontend(), renderFrame()
 		// For now, just present the renderer
-		gl.ClearColor(0.2, 0.3, 0.3, 1.0) // Example clear color
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+		// Using SDL3's GL functions instead of gl package
+		sdl.GLClearColor(0.2, 0.3, 0.3, 1.0) // Example clear color
+		sdl.GLClear(sdl.GL_COLOR_BUFFER_BIT | sdl.GL_DEPTH_BUFFER_BIT)
+
+		// Clear the color buffer with a background color
+		// Using SDL's renderer functions instead of OpenGL
+		e.window.GetWindow().Renderer().SetDrawColor(51, 76, 78, 255) // 0.2, 0.3, 0.3, 1.0 in 0-255 range
+		e.window.GetWindow().Renderer().Clear()
 
 		// GUI Draw
 		// C++ uses DrawContext pctx(nullptr, *window, nullptr);
 		// For now, let's create a dummy DrawContext
 		// We pass e.gui.GetContainer().batch2D. This requires Batch2D to be public.
-		dummyDrawContext := core.NewDrawContext(nil, e.window, e.gui.GetContainer().GetBatch2D()) 
+		dummyDrawContext := core.NewDrawContext(nil, e.window, e.gui.GetContainer().GetBatch2D())
 		e.gui.Draw(*dummyDrawContext, e.assets)
 
 		// GUI PostAct
 		e.gui.PostAct()
 
+		// Use renderer present instead of OpenGL swap
+		e.window.GetWindow().Renderer().Present()
 
-		e.window.GetWindow().GLSwapWindow() // Swap buffers
-		
 		return nil
 	})
 

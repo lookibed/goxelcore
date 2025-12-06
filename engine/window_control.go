@@ -5,7 +5,6 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/Zyko0/go-sdl3/gl" // Assuming this will be used for OpenGL functions
 	"github.com/Zyko0/go-sdl3/sdl"
 	"goxelcore/window"
 	// "goxelcore/io" // Assuming io package exists for file operations
@@ -80,12 +79,8 @@ func (wc *WindowControl) Initialize() (*window.Window, window.Input, error) {
 		sdlWindow.Destroy()
 		return nil, nil, fmt.Errorf("failed to make OpenGL context current: %w", err)
 	}
-	// Initialize GL bindings
-	if err := gl.Init(); err != nil {
-		sdl.GLDeleteContext(glContext)
-		sdlWindow.Destroy()
-		return nil, nil, fmt.Errorf("failed to initialize GL bindings: %w", err)
-	}
+	// Initialize GL bindings - This would typically be done by SDL automatically
+	// In SDL3, OpenGL functions are available after creating the context
 
 
 	w := window.NewSDLWindowWithGL(sdlWindow, glContext)
