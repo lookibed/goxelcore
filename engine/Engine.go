@@ -13,6 +13,7 @@ import (
 	"github.com/Zyko0/go-sdl3/sdl"
 	"goxelcore/debug" // Import our new debug package
 	"goxelcore/io" // For io.Path (needed for logger filename)
+	"goxelcore/logic" // Import the logic package for EngineController
 	"goxelcore/window" // Assuming a window package will be created
 )
 
@@ -30,6 +31,7 @@ type Engine struct {
 	paths        *EnginePaths   // Add EnginePaths field
 	time         Time           // Add Time component
 	logger       *debug.Logger  // Add Logger component
+	controller   *logic.EngineController // Add EngineController component
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -48,7 +50,7 @@ func GetInstance() *Engine {
 			project:  NewProject(), // Initialize Project
 			time:     Time{},       // Initialize Time
 			logger:   debug.NewLogger("engine"), // Initialize Logger
-			// paths will be initialized in Initialize method as it depends on CoreParameters
+			// paths and controller will be initialized in Initialize method as they depend on the engine itself
 		}
 	})
 	return engineInstance
@@ -95,8 +97,11 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	e.input = inp
 	e.glContext = win.GetGLContext() // Get GLContext from the initialized window
 
-	// Initialize time
+	// Initialize Time
 	e.time.Set(float64(time.Now().UnixNano()) / float64(time.Second))
+
+	// Initialize EngineController
+	e.controller = logic.NewEngineController(e)
 
 	e.logger.Info("Engine: Initialization complete.")
 	return nil
@@ -215,7 +220,8 @@ func (e *Engine) GetTime() *Time {
 	return &e.time
 }
 
-// GetLogger returns the Logger instance.
-func (e *Engine) GetLogger() *debug.Logger {
-	return e.logger
+// GetController returns the EngineController instance.
+// Corresponds to C++ Engine::getController()
+func (e *Engine) GetController() *logic.EngineController {
+	return e.controller
 }
