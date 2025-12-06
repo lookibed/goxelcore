@@ -8,6 +8,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/Zyko0/go-sdl3/gl" // Import go-sdl3/gl
 	"github.com/Zyko0/go-sdl3/sdl"
 	"goxelcore/window" // Assuming a window package will be created
 )
@@ -20,6 +21,7 @@ type Engine struct {
 	quitSignal   bool
 	window       *window.Window // Placeholder for the Window component
 	input        window.Input   // Add input field
+	glContext    sdl.GLContext  // Add OpenGL context
 	// Add other fields as needed, mirroring C++ Engine.hpp
 }
 
@@ -52,6 +54,13 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 		return fmt.Errorf("failed to initialize SDL: %w", err)
 	}
 
+	// Set OpenGL attributes
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_PROFILE_MASK, sdl.GL_CONTEXT_PROFILE_CORE)
+	sdl.GLSetAttribute(sdl.GL_DOUBLEBUFFER, 1)
+	sdl.GLSetAttribute(sdl.GL_DEPTH_SIZE, 24)
+
 	// For now, using the display settings directly from EngineSettings
 	// C++ uses DisplaySettings* settings and a title.
 	displaySettings := e.settings.Display
@@ -59,14 +68,32 @@ func (e *Engine) Initialize(coreParameters *CoreParameters) error {
 	height := displaySettings.Height.Value
 	title := "GoxelCore" // Default title, later can be derived from CoreParameters or other settings
 
-	// Create SDL window and renderer
-	sdlWindow, sdlRenderer, err := sdl.CreateWindowAndRenderer(title, width, height, 0)
+	// Create SDL window with OpenGL flag
+	sdlWindow, err := sdl.CreateWindow(title, width, height, sdl.WINDOW_OPENGL)
 	if err != nil {
-		return fmt.Errorf("failed to create SDL window and renderer: %w", err)
+		return fmt.Errorf("failed to create SDL window: %w", err)
+	}
+	// No sdlRenderer for OpenGL context, use sdlWindow directly for GLContext
+
+	// Create OpenGL context
+	glContext, err := sdlWindow.GLCreateContext()
+	if err != nil {
+		return fmt.Errorf("failed to create OpenGL context: %w", err)
+	}
+	e.glContext = glContext
+
+	// Make the context current
+	if err := sdlWindow.GLMakeCurrent(glContext); err != nil {
+		return fmt.Errorf("failed to make OpenGL context current: %w", err)
+	}
+
+	// Initialize GL bindings
+	if err := gl.Init(); err != nil {
+		return fmt.Errorf("failed to initialize GL bindings: %w", err)
 	}
 
 	// Create our window abstraction
-	e.window = window.NewSDLWindow(sdlWindow, sdlRenderer) 
+	e.window = window.NewSDLWindowWithGL(sdlWindow, glContext) // New constructor for window.Window
 	
 	// Initialize Input component
 	e.input = window.NewSDLInput()
@@ -111,11 +138,11 @@ func (e *Engine) Run() {
 
 		// Placeholder for applicationTick(), updateFrontend(), renderFrame()
 		// For now, just present the renderer
-		e.window.GetRenderer().SetDrawColor(255, 255, 255, 255) // White background
-		e.window.GetRenderer().Clear()
-		e.window.GetRenderer().DebugText(50, 50, "GoxelCore Go Port")
-		e.window.GetRenderer().Present()
+		gl.ClearColor(0.2, 0.3, 0.3, 1.0) // Example clear color
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+		e.window.GetWindow().GLSwapWindow() // Swap buffers
+		
 		return nil
 	})
 
@@ -134,7 +161,11 @@ func Terminate() {
 	log.Println("Engine: Terminating...")
 	if engineInstance != nil {
 		if engineInstance.window != nil {
-			engineInstance.window.GetRenderer().Destroy()
+			// Destroy GL context
+			if engineInstance.glContext != nil {
+				sdl.GLDeleteContext(engineInstance.glContext)
+			}
+			// Destroy window
 			engineInstance.window.GetWindow().Destroy()
 		}
 		// Additional cleanup for input or other components if necessary
@@ -153,4 +184,9 @@ func (e *Engine) GetInput() window.Input {
 // Corresponds to C++ Engine::getWindow()
 func (e *Engine) GetWindow() *window.Window {
     return e.window
+}
+
+// GetGLContext returns the OpenGL context.
+func (e *Engine) GetGLContext() sdl.GLContext {
+	return e.glContext
 }
